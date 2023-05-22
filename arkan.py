@@ -28,7 +28,10 @@ def ball_move():
     ball_pos = canvas.coords(ball)
     paddle_pos = canvas.coords(paddle)
     overlaps = canvas.find_overlapping(ball_pos[0], ball_pos[1], ball_pos[2], ball_pos[3])
-    v_change = [1, 1]
+    collided_bricks = []
+    right = False
+    left = False
+    top_or_bottom = False
 
     if ball_pos[0] <= 2 or ball_pos[2] >= WIDTH - 2:
         vector[0] *= -1
@@ -36,15 +39,41 @@ def ball_move():
         vector[1] *= -1
     if paddle in overlaps:
         vector = bounce(ball_pos, paddle_pos)
-    for i in overlaps:
-        if i in bricks:
-            brick_pos = canvas.coords(i)
-            if ball_pos[0] - vector[0] >= brick_pos[2] or ball_pos[2] - vector[0] <= brick_pos[0]:
-                v_change[0] = -1
-            if ball_pos[1] - vector[1] <= brick_pos[3] or ball_pos[3] - vector[1] >= brick_pos[1]:
-                v_change[1] = -1
-            vector[0] *= v_change[0]
-            vector[1] *= v_change[1]
+
+    for collision in overlaps:
+        if collision in bricks:
+            brick_pos = canvas.coords(collision)
+            collided_bricks.append(collision)
+            if ball_pos[0] - vector[0] > brick_pos[2]:
+                # Right side collision
+                right = True
+            elif ball_pos[2] - vector[0] < brick_pos[0]:
+                # Left side collision
+                left = True
+            if ball_pos[1] - vector[1] >= brick_pos[3] or ball_pos[3] - vector[1] <= brick_pos[1]:
+                # Top or bottom collision
+                top_or_bottom = True
+
+    for collision in collided_bricks:
+        bricks.remove(collision)
+        canvas.delete(collision)
+    if right and not left:
+        vector[0] = abs(vector[0])
+    elif left and not right:
+        vector[0] = - abs(vector[0])
+    if top_or_bottom:
+        vector[1] *= -1
+
+
+#    for i in overlaps:
+#        if i in bricks:
+#            brick_pos = canvas.coords(i)
+#            if ball_pos[0] - vector[0] >= brick_pos[2] or ball_pos[2] - vector[0] <= brick_pos[0]:
+#                v_change[0] = -1
+#            if ball_pos[1] - vector[1] <= brick_pos[3] or ball_pos[3] - vector[1] >= brick_pos[1]:
+#                v_change[1] = -1
+#            vector[0] *= v_change[0]
+#            vector[1] *= v_change[1]
 
             # bricks_ball_pos = canvas.coords(overlaps[1])
             # bricks.remove()
